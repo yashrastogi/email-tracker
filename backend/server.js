@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require('cors');
 const app = express();
 const port = process.env.port || 3000;
 const domainName = "localhost";
@@ -22,6 +23,7 @@ let trackingData = [
 ];
 
 app.use(bodyParser.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.json("Hello_world");
@@ -34,7 +36,7 @@ app.post("/generate-tracking-link", (req, res) => {
   // Here you can generate a unique tracking link and store it in your database
   const id = Math.random().toString(36).substring(7);
   const dateCreated = new Date().toLocaleString("en-IN", {
-    timeZone: "IST",
+    timeZone: "Asia/Kolkata",
     hour12: false,
   });
 
@@ -60,11 +62,14 @@ app.post("/generate-tracking-link", (req, res) => {
 // Log visits to transparent GIF and save to trackingData
 app.get("/uploads/:gifId.gif", (req, res) => {
   const gifId = req.params.gifId;
-  const ipAddress = req.ip; // Assuming you're using Express behind a proxy for client IP
+  const ipText = req.headers['x-forwarded-for'] || req.ip; // Assuming you're using Express behind a proxy for client IP
+  const parts = ipText.split(',');
+  const ipAddress = parts.length > 0 ? parts[0] : ipText;
+
 
   const visitData = {
     openedAt: new Date().toLocaleString("en-IN", {
-      timeZone: "IST",
+      timeZone: "Asia/Kolkata",
       hour12: false,
     }),
     ipAddress: ipAddress,
@@ -74,7 +79,6 @@ app.get("/uploads/:gifId.gif", (req, res) => {
   const trackingLink = trackingData.find((data) => data.id === gifId);
   if (trackingLink) {
     trackingLink.opens.push(visitData);
-    console.log(trackingData);
   }
 
   res.sendFile(`${__dirname}/uploads/${gifId}.gif`);
