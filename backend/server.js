@@ -3,7 +3,7 @@ const fs = require("fs");
 const bodyParser = require("body-parser");
 const path = require("path");
 const app = express();
-const port = 3000;
+const port = process.env.port || 3000;
 const domainName = "localhost";
 
 // Dummy tracking data (for demonstration)
@@ -17,19 +17,15 @@ let trackingData = [
         openedAt: "14/2/2024, 23:31:18",
         ipAddress: "::1",
       },
-      {
-        openedAt: "14/2/2024, 23:31:20",
-        ipAddress: "::1",
-      },
-      {
-        openedAt: "14/2/2024, 23:31:22",
-        ipAddress: "::1",
-      },
     ],
   },
 ];
 
 app.use(bodyParser.json());
+
+app.get("/", (req, res) => {
+  res.json("Hello_world");
+});
 
 // Endpoint to generate unique tracking links
 app.post("/generate-tracking-link", (req, res) => {
@@ -49,7 +45,7 @@ app.post("/generate-tracking-link", (req, res) => {
   );
   fs.writeFileSync(`${__dirname}/uploads/${id}.gif`, transparentGif);
 
-  const gifLink = `http://${domainName}/uploads/${id}.gif`;
+  const gifLink = `http://${domainName}:${port}/uploads/${id}.gif`;
 
   trackingData.push({
     id: id,
@@ -137,5 +133,5 @@ function deleteUnusedGifImages(trackingData) {
 
 deleteUnusedGifImages(trackingData);
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Example app listening on port ${port}`);
 });
