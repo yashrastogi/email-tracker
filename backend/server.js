@@ -2,25 +2,12 @@ const express = require("express");
 const fs = require("fs");
 const bodyParser = require("body-parser");
 const path = require("path");
-const cors = require('cors');
+const cors = require("cors");
 const app = express();
 const port = process.env.port || 3000;
 const domainName = "localhost";
 
-// Dummy tracking data (for demonstration)
-let trackingData = [
-  {
-    id: "8em5td",
-    label: "Test Label",
-    dateCreated: "14/2/2024, 23:31:06",
-    opens: [
-      {
-        openedAt: "14/2/2024, 23:31:18",
-        ipAddress: "::1",
-      },
-    ],
-  },
-];
+let trackingData = [];
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -33,12 +20,8 @@ app.get("/", (req, res) => {
 app.post("/generate-tracking-link", (req, res) => {
   const { label } = req.body;
 
-  // Here you can generate a unique tracking link and store it in your database
   const id = Math.random().toString(36).substring(7);
-  const dateCreated = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour12: false,
-  });
+  const dateCreated = new Date().toLocaleString();
 
   // Write transparent 1x1 gif
   const transparentGif = Buffer.from(
@@ -62,16 +45,12 @@ app.post("/generate-tracking-link", (req, res) => {
 // Log visits to transparent GIF and save to trackingData
 app.get("/uploads/:gifId.gif", (req, res) => {
   const gifId = req.params.gifId;
-  const ipText = req.headers['x-forwarded-for'] || req.ip; // Assuming you're using Express behind a proxy for client IP
-  const parts = ipText.split(',');
+  const ipText = req.headers["x-forwarded-for"] || req.ip; // Assuming you're using Express behind a proxy for client IP
+  const parts = ipText.split(",");
   const ipAddress = parts.length > 0 ? parts[0] : ipText;
 
-
   const visitData = {
-    openedAt: new Date().toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      hour12: false,
-    }),
+    openedAt: new Date().toLocaleString(),
     ipAddress: ipAddress,
   };
 
