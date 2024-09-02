@@ -37,7 +37,7 @@ const TrackingList = () => {
 
   const handleDeleteClick = async (trackingId) => {
     const pass = window.prompt('Please enter deletion password:');
-    deleteTrackingId(pass, trackingId);
+    await deleteTrackingId(pass, trackingId);
     fetchTrackingIds();
   }
 
