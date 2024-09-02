@@ -4,9 +4,9 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const cors = require("cors");
 const app = express();
-const port = process.env.port || 3001;
-const domainName = process.env.domainname || "localhost";
-const deletePassword = process.env.deletePassword || "Some Kind of Default Password";
+const port = process.env.PORT || 3001;
+const domainName = process.env.DOMAINNAME || "localhost";
+const deletePassword = process.env.DELETEPASSWORD || "Some Kind of Default Password";
 
 let trackingData = [];
 
