@@ -45,6 +45,7 @@ app.post("/delete-tracking-link", (req, res) => {
       if (el.id === String(trackingId)) {
         foundId = true;
         trackingData.splice(idx, 1);
+        deleteUnusedGifImages(trackingData);
       }
     });
   }
