@@ -1,6 +1,6 @@
 // TrackingList.js
 import React, { useState } from "react";
-import { getActiveTrackingIds, getTrackingData } from "../api";
+import { getActiveTrackingIds, getTrackingData, setStrike, deleteTrackingId } from "../api";
 
 const TrackingList = () => {
   const [trackingIds, setTrackingIds] = useState([]);
@@ -30,6 +30,17 @@ const TrackingList = () => {
     fetchStats(trackingId);
   };
 
+  const handleStrikeClick = async (openedAt) => {
+    await setStrike(selectedId, openedAt);
+    fetchStats(selectedId);
+  }
+
+  const handleDeleteClick = async (trackingId) => {
+    const pass = window.prompt('Please enter deletion password:');
+    deleteTrackingId(pass, trackingId);
+    fetchTrackingIds();
+  }
+
   const handleFetchAllTrackingIds = () => {
     fetchTrackingIds();
   };
@@ -43,19 +54,22 @@ const TrackingList = () => {
       <ul>
         {trackingIds.map((id) => (
           <li key={id} onClick={() => handleTrackingIdClick(id)}>
-            {id}
+            {id} <strong onClick={(event) => { event.stopPropagation(); handleDeleteClick(id); }}>❌</strong>
           </li>
         ))}
       </ul>
       {selectedId && (
         <div>
-          <h3>Statistics for Tracking ID: {selectedId} {stats[0] && "("+stats[0].label+")"}</h3>
+          <h3>Statistics for Tracking ID: {selectedId} {stats[0] && "(" + stats[0].label + ")"}</h3>
           <ol>
             {stats[0] &&
               stats[0]["opens"].slice().reverse().map((stat, index) => (
-                <li key={index}>
+                <li key={index} style={{
+                  textDecoration: stat.striked ? 'line-through' : 'none'
+                }}>
                   <strong>Opened At:</strong> {(new Date(stat.openedAt)).toLocaleString()},{" "}
-                  <strong>IP Address:</strong> {stat.ipAddress}
+                  <strong>IP Address:</strong> {stat.ipAddress}{" "}
+                  <strong onClick={() => handleStrikeClick(stat.openedAt)}>❌</strong>
                 </li>
               ))}
           </ol>

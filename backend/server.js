@@ -4,8 +4,9 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const cors = require("cors");
 const app = express();
-const port = process.env.port || 3000;
-const domainName = "localhost";
+const port = process.env.port || 3001;
+const domainName = process.env.domainname || "localhost";
+const deletePassword = process.env.deletePassword || "Some Kind of Default Password";
 
 let trackingData = [];
 
@@ -14,6 +15,40 @@ app.use(cors());
 
 app.get("/", (req, res) => {
   res.json("Hello_world");
+});
+
+// Endpoint to strikethrough particular opens
+app.post("/strike-open", (req, res) => {
+  const { trackingId, openedAt } = req.body;
+  let foundId = false, foundOpen = false;
+  trackingData.forEach((el) => {
+    if (el.id === String(trackingId)) {
+      foundId = true;
+      el.opens.forEach((el2) => {
+        if (String(el2.openedAt) === String(openedAt)) {
+          foundOpen = true;
+          el2.striked = !el2.striked;
+        }
+      });
+    }
+  });
+  res.json({foundId, foundOpen});
+});
+
+// Endpoint to delete tracking links
+app.post("/delete-tracking-link", (req, res) => {
+  const { pass, trackingId } = req.body;
+  let foundId = false, passMatch = false;
+  if (String(pass) === String(deletePassword)) {
+    passMatch = true;
+    trackingData.forEach((el, idx) => {
+      if (el.id === String(trackingId)) {
+        foundId = true;
+        trackingData.splice(idx, 1);
+      }
+    });
+  }
+  res.json({passMatch, foundId});
 });
 
 // Endpoint to generate unique tracking links
@@ -30,7 +65,7 @@ app.post("/generate-tracking-link", (req, res) => {
   );
   fs.writeFileSync(`${__dirname}/uploads/${id}.gif`, transparentGif);
 
-  const gifLink = `http://${domainName}:${port}/uploads/${id}.gif`;
+  const gifLink = `http://${domainName}/uploads/${id}.gif`;
 
   trackingData.push({
     id: id,
@@ -52,6 +87,7 @@ app.get("/uploads/:gifId.gif", (req, res) => {
   const visitData = {
     openedAt: new Date().toLocaleString(),
     ipAddress: ipAddress,
+    striked: false,
   };
 
   // Find the tracking link by ID and save visit data
@@ -116,5 +152,5 @@ function deleteUnusedGifImages(trackingData) {
 
 deleteUnusedGifImages(trackingData);
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Email tracker app listening on port ${port}`);
 });
